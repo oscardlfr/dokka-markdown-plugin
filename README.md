@@ -1,6 +1,12 @@
 # Dokka Markdown Plugin
 
-Dokka 2.2.x plugin that transforms KDoc into L0-compliant structured markdown (`docs/api/*.md`) with 14-field YAML frontmatter, content-addressed hashes for CI drift detection, and first-class KMP expect/actual handling. Replaces the legacy `dokka-to-docs.sh` script.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Dokka](https://img.shields.io/badge/Dokka-2.2.0-blue)](https://kotlinlang.org/docs/dokka-introduction.html)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.3.20-purple)](https://kotlinlang.org/)
+
+Dokka 2.2.x plugin that transforms KDoc into structured markdown (`docs/api/*.md`) with 14-field YAML frontmatter, content-addressed hashes for CI drift detection, and first-class KMP expect/actual handling.
+
+Designed for AI agent consumption — deterministic output, slug-based cross-references, and structured platform labels.
 
 ## Apply
 
@@ -21,7 +27,7 @@ allprojects {
     repositories {
         mavenCentral()
         maven {
-            url = uri("https://maven.pkg.github.com/oscardlfr/AndroidCommonDoc")
+            url = uri("https://maven.pkg.github.com/oscardlfr/dokka-markdown-plugin")
             credentials {
                 username = providers.gradleProperty("gpr.user").orNull ?: System.getenv("GITHUB_ACTOR")
                 password = providers.gradleProperty("gpr.key").orNull ?: System.getenv("GITHUB_TOKEN")
@@ -43,20 +49,22 @@ dependencies {
 }
 ```
 
-Store credentials in `~/.gradle/gradle.properties` (never commit):
+Store GitHub Packages credentials in `~/.gradle/gradle.properties` (never commit):
 
 ```properties
 gpr.user=your-github-username
 gpr.key=ghp_yourPersonalAccessToken
 ```
 
+(The token needs `read:packages` scope. [Create one here](https://github.com/settings/tokens/new?scopes=read:packages&description=dokka-markdown-plugin).)
+
 ## Task
 
-Run `./gradlew dokkaGenerate` — the plugin intercepts Dokka's rendering phase automatically via the `CoreExtensions.renderer` extension point, overriding `htmlRenderer`. Output lands in `build/dokka/` by default. Copy or symlink the output to `docs/api/` for MCP tool consumption.
+Run `./gradlew dokkaGenerate` — the plugin intercepts Dokka's rendering phase automatically via the `CoreExtensions.renderer` extension point, overriding `htmlRenderer`. Output lands in `build/dokka/` by default.
 
 ```bash
 ./gradlew dokkaGenerate
-# then copy output:
+# then copy output to your docs tree:
 cp -r build/dokka/ docs/api/
 ```
 
@@ -73,7 +81,7 @@ Three file types are generated per module:
 - `docs/api/<module>-hub.md` — navigation hub with a markdown table of all sub-docs (≤100 lines); hub table has a blank separator row after the header
 - `docs/api/<module>/-<kebab-class>.md` — one file per top-level class/object/interface (Type A); filename has leading `-`, no module prefix (e.g., `-base64-converter.md`)
 - `docs/api/<module>/<kebab-fn>.md` — one file per top-level function/property/typealias (Type B); no leading `-` (e.g., `parse-json.md`)
-- `.androidcommondoc/kdoc-state.json` — written at end of every run: ISO 8601 timestamp + 12-char compact content hash per file, for CI drift detection
+- `<module>/build/.androidcommondoc/kdoc-state.json` — written at end of every run (per-module): ISO 8601 timestamp + 12-char compact content hash per file, for CI drift detection
 
 Each generated doc includes 14-field YAML frontmatter:
 
@@ -88,7 +96,7 @@ status: active
 layer: L1
 category: api
 description: One-line KDoc summary.
-version: 1
+version: 1                             # frontmatter schema version (always 1)
 last_updated: 2026-04
 generated: true
 generated_from: dokka
@@ -103,6 +111,20 @@ Optional 15th field for multi-target KMP declarations:
 platforms: [android, common, desktop]
 ```
 
+## Module name normalization
+
+The plugin normalizes module names to a consistent kebab form, supporting all common Gradle conventions:
+
+| Consumer module | Normalized |
+|---|---|
+| `core-error` (flat kebab) | `core-error` |
+| `:core:error` (Gradle colon path) | `core-error` |
+| `core:error` (relative colon) | `core-error` |
+| `app:feature:login` (deep nesting) | `app-feature-login` |
+| `core/error` (filesystem path) | `core-error` |
+| `com.example.core` (dot notation) | `com-example-core` |
+| `Core:Error` (mixed case) | `core-error` |
+
 ## Compatibility matrix
 
 | Dokka | Kotlin | AGP | JDK | Status |
@@ -113,31 +135,48 @@ platforms: [android, common, desktop]
 
 Dokka 2.1.x used a different renderer extension point (`htmlRenderer` shape differs). Upgrade to 2.2.x before adopting this plugin.
 
-## Known fixes applied (vs. legacy dokka-to-docs.sh)
-
-| Legacy bug | Plugin behavior |
-|------------|-----------------|
-| Two timestamps per file (2-pass script) | Single-pass renderer; one ISO timestamp in central `.androidcommondoc/kdoc-state.json` |
-| `androidapplecommondesktop` concatenated string | `platforms: [android, apple, common, desktop]` — sorted array |
-| Duplicated expect/actual bodies | Merged — one body, platform list separate |
-| Duplicate hub entries + missing separator | Deterministic sort; one data row per symbol; blank separator row after header |
-| HTML leftovers (`[](#content)`, `index.html` links) | Direct Documentable → markdown, no ContentNode round-trip |
-
-## Replaces
-
-This plugin replaces the lost `scripts/sh/dokka-to-docs.sh` referenced by `skills/generate-api-docs/SKILL.md`. No paired shell/PowerShell scripts — the plugin is Gradle-native and cross-platform.
-
 ## Current limitations (0.1.0)
 
 - `layer` field hardcoded to `L1` — custom DSL for L0/L2 override planned for 0.2.0
 - Output directory is Dokka's `context.configuration.outputDir`; custom `structuredMarkdown { outputDirectory }` DSL planned for 0.2.0
 - KDoc-state file path uses `../` relative from `outputDir` — absolute path DSL override planned for 0.2.0
 
-## Opt-in via /setup wizard
+## Building from source
 
-Run `/setup --dokka-plugin yes` to auto-install. The wizard (step W10) handles:
-- Adding the version catalog entry
-- Wiring the GitHub Packages repository
-- Writing the `l0-manifest.json` plugin tracking entry
+```bash
+git clone https://github.com/oscardlfr/dokka-markdown-plugin.git
+cd dokka-markdown-plugin
+./gradlew test --no-daemon       # 120 unit + 2 integration tests
+./gradlew publishToMavenLocal    # install locally for testing
+```
 
-See also `skills/setup/SKILL.md` wizard step W10.
+Then in your consumer project, add `mavenLocal()` to repositories instead of GitHub Packages.
+
+## Composite build (no publish required)
+
+During development or when testing pre-release changes, consumers can use Gradle composite build:
+
+```kotlin
+// consumer settings.gradle.kts
+includeBuild("../dokka-markdown-plugin") {
+    dependencySubstitution {
+        substitute(module("com.androidcommondoc:dokka-markdown-plugin"))
+            .using(project(":"))
+    }
+}
+```
+
+Any source change in the plugin is picked up by the consumer's next build — no republish step.
+
+## AndroidCommonDoc integration
+
+This plugin is part of the [AndroidCommonDoc](https://github.com/oscardlfr/AndroidCommonDoc) toolkit ecosystem. If you're using AndroidCommonDoc, the `/setup` wizard step **W10** automates the installation:
+
+```bash
+cd your-project
+/setup --dokka-plugin yes
+```
+
+## License
+
+[MIT](LICENSE)
