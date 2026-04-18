@@ -4,6 +4,12 @@ plugins {
     `java-gradle-plugin`
 }
 
+// java-gradle-plugin is applied only for TestKit's plugin-under-test-metadata.properties
+// generation (GoldenIntegrationTest needs it). We are NOT shipping a Gradle plugin —
+// consumers use dokkaPlugin(...) via the DokkaPlugin SPI. Disable the automatic
+// plugin-marker publication so publish:
+//   - Publishes only our main maven publication
+//   - Does NOT publish a com.androidcommondoc.dokka-markdown.gradle.plugin marker
 gradlePlugin {
     plugins {
         create("dokkaMarkdown") {
@@ -11,6 +17,7 @@ gradlePlugin {
             implementationClass = "com.androidcommondoc.dokka.markdown.StructuredMarkdownPlugin"
         }
     }
+    isAutomatedPublishing = false
 }
 
 // Maven Central only — no plugins.gradle.org needed (corporate SSL proxy constraint).
@@ -64,7 +71,7 @@ publishing {
     repositories {
         maven {
             name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/oscardlfr/AndroidCommonDoc")
+            url = uri("https://maven.pkg.github.com/oscardlfr/dokka-markdown-plugin")
             credentials {
                 username = System.getenv("GITHUB_ACTOR")
                 password = System.getenv("GITHUB_TOKEN")
