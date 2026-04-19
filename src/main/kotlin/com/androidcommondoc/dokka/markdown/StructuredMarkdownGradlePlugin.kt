@@ -1,10 +1,12 @@
 package com.androidcommondoc.dokka.markdown
 
+import org.gradle.api.ExtensiblePolymorphicDomainObjectContainer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.plugins.ExtensionContainer
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.registerBinding
-import org.jetbrains.dokka.gradle.DokkaExtension
+import org.jetbrains.dokka.gradle.engine.plugins.DokkaPluginParametersBaseSpec
 import org.jetbrains.dokka.gradle.internal.InternalDokkaGradlePluginApi
 
 @OptIn(InternalDokkaGradlePluginApi::class)
@@ -16,8 +18,20 @@ class StructuredMarkdownGradlePlugin : Plugin<Project> {
         )
         project.plugins.withId("org.jetbrains.dokka") {
             project.afterEvaluate {
-                val dokkaExt = project.extensions.getByType(DokkaExtension::class.java)
-                with(dokkaExt.pluginsConfiguration) {
+                val dokkaAny = project.extensions.findByName("dokka")
+                    ?: run {
+                        project.logger.warn("structuredMarkdown: Dokka extension 'dokka' not found — is Dokka plugin applied?")
+                        return@afterEvaluate
+                    }
+                val dokkaExtensions = dokkaAny.javaClass
+                    .getMethod("getExtensions")
+                    .invoke(dokkaAny) as? ExtensionContainer
+                    ?: return@afterEvaluate
+                @Suppress("UNCHECKED_CAST")
+                val pluginsConfig = dokkaExtensions.findByName("pluginsConfiguration")
+                    as? ExtensiblePolymorphicDomainObjectContainer<DokkaPluginParametersBaseSpec>
+                    ?: return@afterEvaluate
+                with(pluginsConfig) {
                     registerBinding(
                         MarkdownPluginConfiguration::class,
                         MarkdownPluginConfiguration::class
