@@ -21,7 +21,7 @@ object HubWriter {
         appendLine()
         appendLine("# ${ctx.moduleName} API")
         appendLine()
-        appendLine("Auto-generated from KDoc via Dokka plugin `com.androidcommondoc:dokka-markdown-plugin`.")
+        appendLine("Auto-generated from KDoc via Dokka plugin `io.github.oscardlfr:dokka-markdown-plugin`.")
         appendLine()
         appendLine("## Sub-documents")
         appendLine()

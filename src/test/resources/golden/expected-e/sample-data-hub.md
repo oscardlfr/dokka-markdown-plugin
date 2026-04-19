@@ -1,18 +1,8 @@
 ---
-scope: [api, sample-data]
-sources: [sample-data]
-targets: [all]
 slug: sample-data-api-hub
-status: active
 layer: L1
 category: api
-description: sample-data API hub
-version: 1
-last_updated: 2026-04
-generated: true
-generated_from: dokka
-content_hash: HASH_PLACEHOLDER
-parent: api-hub
+contentHash: HASH_PLACEHOLDER
 ---
 
 

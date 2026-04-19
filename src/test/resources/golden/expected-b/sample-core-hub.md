@@ -4,7 +4,7 @@ sources: [sample-core]
 targets: [all]
 slug: sample-core-api-hub
 status: active
-layer: L1
+layer: L0
 category: api
 description: sample-core API hub
 version: 1

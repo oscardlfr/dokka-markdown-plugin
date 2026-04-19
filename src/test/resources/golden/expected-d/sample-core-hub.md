@@ -25,5 +25,5 @@ Auto-generated from KDoc via Dokka plugin `io.github.oscardlfr:dokka-markdown-pl
 | Class/Interface | Description |
 |----------------|-------------|
 
-| [NetworkResult](sample-core/-network-result.md) | Represents the result of a network operation. |
+| [NetworkResult](sample-core/network-result.md) | Represents the result of a network operation. |
 | [parseJson](sample-core/parse-json.md) | Parses raw JSON bytes into a typed result. |

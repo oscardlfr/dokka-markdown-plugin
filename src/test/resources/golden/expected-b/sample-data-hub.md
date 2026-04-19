@@ -4,7 +4,7 @@ sources: [sample-data]
 targets: [all]
 slug: sample-data-api-hub
 status: active
-layer: L1
+layer: L0
 category: api
 description: sample-data API hub
 version: 1

@@ -1,18 +1,8 @@
 ---
-scope: [api, sample-core]
-sources: [sample-core]
-targets: [all]
 slug: sample-core-api-hub
-status: active
 layer: L1
 category: api
-description: sample-core API hub
-version: 1
-last_updated: 2026-04
-generated: true
-generated_from: dokka
-content_hash: HASH_PLACEHOLDER
-parent: api-hub
+contentHash: HASH_PLACEHOLDER
 ---
 
 
