@@ -1,8 +1,10 @@
 package com.androidcommondoc.dokka.markdown
 
+import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -95,6 +97,221 @@ class GoldenIntegrationTest {
             |include(":sample-core")
             |include(":sample-data")
         """.trimMargin())
+    }
+
+    private fun runWithConfig(
+        layer: String? = null,
+        hashFormat: String? = null,
+        filenameConvention: String? = null,
+        frontmatterMode: String? = null,
+    ): BuildResult {
+        if (layer != null || hashFormat != null || filenameConvention != null || frontmatterMode != null) {
+            val dslLines = buildList {
+                layer?.let { add("    layer.set(\"$it\")") }
+                hashFormat?.let { add("    hashFormat.set(com.androidcommondoc.dokka.markdown.HashFormat.$it)") }
+                filenameConvention?.let { add("    filenameConvention.set(com.androidcommondoc.dokka.markdown.FilenameConvention.$it)") }
+                frontmatterMode?.let { add("    frontmatterMode.set(com.androidcommondoc.dokka.markdown.FrontmatterMode.$it)") }
+            }
+            val configBlock = "structuredMarkdown {\n${dslLines.joinToString("\n")}\n}"
+            val submoduleBuildWithConfig = """
+                plugins {
+                    kotlin("multiplatform") version "2.3.0"
+                    id("org.jetbrains.dokka") version "2.2.0"
+                    id("com.androidcommondoc.dokka-markdown-config")
+                }
+                kotlin { jvm(); sourceSets { commonMain.dependencies {} } }
+                dependencies { dokkaPlugin("com.androidcommondoc:dokka-markdown-plugin:0.1.0") }
+                $configBlock
+            """.trimIndent()
+            File(projectDir, "sample-core/build.gradle.kts").writeText(submoduleBuildWithConfig)
+            File(projectDir, "sample-data/build.gradle.kts").writeText(submoduleBuildWithConfig)
+        }
+        return GradleRunner.create()
+            .withProjectDir(projectDir)
+            .withArguments("dokkaGenerate", "--stacktrace")
+            .withPluginClasspath()
+            .forwardOutput()
+            .build()
+    }
+
+    private fun diffAgainstGolden(outputDirs: List<File>, scenarioExpectedDir: File) {
+        val goldenFiles = scenarioExpectedDir.walkTopDown().filter { it.isFile && it.extension == "md" }
+        var checkedCount = 0
+        for (goldenFile in goldenFiles) {
+            val relativePath = goldenFile.relativeTo(scenarioExpectedDir).path.replace("\\", "/")
+            val actualFile = outputDirs
+                .map { File(it, relativePath) }
+                .firstOrNull { it.exists() }
+            assertTrue(actualFile != null, "Expected output file missing for scenario ${scenarioExpectedDir.name}: $relativePath")
+
+            val goldenLines = goldenFile.readLines(Charsets.UTF_8)
+                .filterNot { it.startsWith("content_hash:") || it.startsWith("last_updated:") || it.startsWith("contentHash:") }
+            val actualLines = actualFile.readLines(Charsets.UTF_8)
+                .filterNot { it.startsWith("content_hash:") || it.startsWith("last_updated:") || it.startsWith("contentHash:") }
+
+            assertEquals(goldenLines.size, actualLines.size,
+                "Line count mismatch in ${scenarioExpectedDir.name}/$relativePath after filtering volatile fields: " +
+                "golden=${goldenLines.size} actual=${actualLines.size}")
+
+            goldenLines.zip(actualLines).forEachIndexed { i, (expected, actual) ->
+                assertEquals(expected, actual,
+                    "Diff in ${scenarioExpectedDir.name}/$relativePath at line ${i + 1}: " +
+                    "golden=[$expected] actual=[$actual]")
+            }
+            checkedCount++
+        }
+        assertTrue(checkedCount >= 1,
+            "No golden files checked for scenario ${scenarioExpectedDir.name} — expected dir may be empty")
+    }
+
+    private fun generateScenarioGolden(scenarioName: String, outputDirs: List<File>) {
+        val targetDir = File(System.getProperty("user.dir"),
+            "src/test/resources/golden/expected-$scenarioName")
+        targetDir.mkdirs()
+        outputDirs.forEach { outputDir ->
+            outputDir.walkTopDown().filter { it.isFile && it.extension == "md" }.forEach { src ->
+                val rel = src.relativeTo(outputDir)
+                val dst = File(targetDir, rel.path)
+                dst.parentFile.mkdirs()
+                src.copyTo(dst, overwrite = true)
+            }
+        }
+        println("Generated golden files for scenario-$scenarioName in ${targetDir.absolutePath}")
+    }
+
+    @Test
+    fun `generateGolden_scenarioB`() {
+        runWithConfig(layer = "L0")
+        val outputDirs = listOf(
+            File(projectDir, "sample-core/build/dokka/html"),
+            File(projectDir, "sample-data/build/dokka/html"),
+        ).filter { it.exists() }
+        generateScenarioGolden("b", outputDirs)
+    }
+
+    @Test
+    fun `generateGolden_scenarioC`() {
+        runWithConfig(hashFormat = "FULL_SHA256_WITH_PREFIX")
+        val outputDirs = listOf(
+            File(projectDir, "sample-core/build/dokka/html"),
+            File(projectDir, "sample-data/build/dokka/html"),
+        ).filter { it.exists() }
+        generateScenarioGolden("c", outputDirs)
+    }
+
+    @Test
+    fun `generateGolden_scenarioD`() {
+        runWithConfig(filenameConvention = "PLAIN")
+        val outputDirs = listOf(
+            File(projectDir, "sample-core/build/dokka/html"),
+            File(projectDir, "sample-data/build/dokka/html"),
+        ).filter { it.exists() }
+        generateScenarioGolden("d", outputDirs)
+    }
+
+    @Test
+    fun `generateGolden_scenarioE`() {
+        runWithConfig(frontmatterMode = "MINIMAL")
+        val outputDirs = listOf(
+            File(projectDir, "sample-core/build/dokka/html"),
+            File(projectDir, "sample-data/build/dokka/html"),
+        ).filter { it.exists() }
+        generateScenarioGolden("e", outputDirs)
+    }
+
+    @Test
+    fun `generateGolden_scenarioF`() {
+        runWithConfig(frontmatterMode = "NONE")
+        val outputDirs = listOf(
+            File(projectDir, "sample-core/build/dokka/html"),
+            File(projectDir, "sample-data/build/dokka/html"),
+        ).filter { it.exists() }
+        generateScenarioGolden("f", outputDirs)
+    }
+
+    @Test
+    fun `goldenTest_scenarioB_layer_L0`() {
+        runWithConfig(layer = "L0")
+
+        val outputDirs = listOf(
+            File(projectDir, "sample-core/build/dokka/html"),
+            File(projectDir, "sample-data/build/dokka/html"),
+        ).filter { it.exists() }
+
+        assertTrue(outputDirs.isNotEmpty(), "At least one output directory must be created")
+
+        val scenarioExpectedDir = GoldenIntegrationTest::class.java.classLoader
+            .getResource("golden/expected-b")!!
+            .let { File(it.toURI()) }
+        diffAgainstGolden(outputDirs, scenarioExpectedDir)
+    }
+
+    @Test
+    fun `goldenTest_scenarioC_hashFormat_FULL_SHA256_WITH_PREFIX`() {
+        runWithConfig(hashFormat = "FULL_SHA256_WITH_PREFIX")
+
+        val outputDirs = listOf(
+            File(projectDir, "sample-core/build/dokka/html"),
+            File(projectDir, "sample-data/build/dokka/html"),
+        ).filter { it.exists() }
+
+        assertTrue(outputDirs.isNotEmpty(), "At least one output directory must be created")
+
+        val scenarioExpectedDir = GoldenIntegrationTest::class.java.classLoader
+            .getResource("golden/expected-c")!!
+            .let { File(it.toURI()) }
+        diffAgainstGolden(outputDirs, scenarioExpectedDir)
+    }
+
+    @Test
+    fun `goldenTest_scenarioD_filenameConvention_PLAIN`() {
+        runWithConfig(filenameConvention = "PLAIN")
+
+        val outputDirs = listOf(
+            File(projectDir, "sample-core/build/dokka/html"),
+            File(projectDir, "sample-data/build/dokka/html"),
+        ).filter { it.exists() }
+
+        assertTrue(outputDirs.isNotEmpty(), "At least one output directory must be created")
+
+        val scenarioExpectedDir = GoldenIntegrationTest::class.java.classLoader
+            .getResource("golden/expected-d")!!
+            .let { File(it.toURI()) }
+        diffAgainstGolden(outputDirs, scenarioExpectedDir)
+    }
+
+    @Test
+    fun `goldenTest_scenarioE_frontmatterMode_MINIMAL`() {
+        runWithConfig(frontmatterMode = "MINIMAL")
+
+        val outputDirs = listOf(
+            File(projectDir, "sample-core/build/dokka/html"),
+            File(projectDir, "sample-data/build/dokka/html"),
+        ).filter { it.exists() }
+
+        assertTrue(outputDirs.isNotEmpty(), "At least one output directory must be created")
+
+        val scenarioExpectedDir = GoldenIntegrationTest::class.java.classLoader
+            .getResource("golden/expected-e")!!
+            .let { File(it.toURI()) }
+        diffAgainstGolden(outputDirs, scenarioExpectedDir)
+    }
+
+    @Test
+    fun `goldenTest_scenarioF_frontmatterMode_NONE`() {
+        runWithConfig(frontmatterMode = "NONE")
+
+        val outputDirs = listOf(
+            File(projectDir, "sample-core/build/dokka/html"),
+            File(projectDir, "sample-data/build/dokka/html"),
+        ).filter { it.exists() }
+
+        assertTrue(outputDirs.isNotEmpty(), "At least one output directory must be created")
+
+        val scenarioExpectedDir = GoldenIntegrationTest::class.java.classLoader
+            .getResource("golden/expected-f")!!
+            .let { File(it.toURI()) }
+        diffAgainstGolden(outputDirs, scenarioExpectedDir)
     }
 
     @Test

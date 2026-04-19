@@ -113,6 +113,7 @@ class StructuredMarkdownRenderer(private val context: DokkaContext) : Renderer {
             description = fullDescription,
             members = memberEntries,
             frontmatter = frontmatter,
+            frontmatterMode = config.frontmatterMode,
         ))
         val basename = SlugDeriver.fileBasenameFor(symbolName, config.filenameConvention)
         File(moduleDir, "$basename.md").writeText(content, Charsets.UTF_8)
@@ -182,6 +183,7 @@ class StructuredMarkdownRenderer(private val context: DokkaContext) : Renderer {
             throws = throws,
             sees = sees,
             frontmatter = frontmatter,
+            frontmatterMode = config.frontmatterMode,
         ))
         File(moduleDir, kebab + ".md").writeText(content, Charsets.UTF_8)
         if (parentClassName != null) return null
@@ -282,6 +284,7 @@ class StructuredMarkdownRenderer(private val context: DokkaContext) : Renderer {
             description = fullDescription,
             members = memberEntries,
             frontmatter = frontmatter,
+            frontmatterMode = config.frontmatterMode,
         ))
         val basename = SlugDeriver.fileBasenameFor(symbolName, config.filenameConvention)
         File(moduleDir, "$basename.md").writeText(content, Charsets.UTF_8)
@@ -311,6 +314,6 @@ class StructuredMarkdownRenderer(private val context: DokkaContext) : Renderer {
             contentHash = contentHash,
             parent = config.hubParent,
         )
-        return HubWriter.write(HubContext(moduleName, entries, frontmatter))
+        return HubWriter.write(HubContext(moduleName, entries, frontmatter, config.frontmatterMode))
     }
 }

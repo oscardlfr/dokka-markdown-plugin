@@ -17,12 +17,13 @@ data class TypeBContext(
     val throws: List<Throws>,
     val sees: List<See>,
     val frontmatter: FrontmatterFields,
+    val frontmatterMode: FrontmatterMode = FrontmatterMode.STRUCTURED,
 )
 
 object TypeBWriter {
 
     fun write(ctx: TypeBContext): String = buildString {
-        append(FrontmatterSerializer.serialize(ctx.frontmatter))
+        append(FrontmatterSerializer.serialize(ctx.frontmatter, ctx.frontmatterMode))
         appendLine()
         appendLine()
         val breadcrumb = buildBreadcrumb(ctx)

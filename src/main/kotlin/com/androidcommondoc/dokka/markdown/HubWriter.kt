@@ -10,12 +10,13 @@ data class HubContext(
     val moduleName: String,
     val entries: List<HubEntry>,
     val frontmatter: FrontmatterFields,
+    val frontmatterMode: FrontmatterMode = FrontmatterMode.STRUCTURED,
 )
 
 object HubWriter {
 
     fun write(ctx: HubContext): String = buildString {
-        append(FrontmatterSerializer.serialize(ctx.frontmatter))
+        append(FrontmatterSerializer.serialize(ctx.frontmatter, ctx.frontmatterMode))
         appendLine()
         appendLine()
         appendLine("# ${ctx.moduleName} API")

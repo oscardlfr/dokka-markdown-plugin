@@ -15,12 +15,13 @@ data class TypeAContext(
     val description: String,
     val members: List<Pair<String, String>>,
     val frontmatter: FrontmatterFields,
+    val frontmatterMode: FrontmatterMode = FrontmatterMode.STRUCTURED,
 )
 
 object TypeAWriter {
 
     fun write(ctx: TypeAContext): String = buildString {
-        append(FrontmatterSerializer.serialize(ctx.frontmatter))
+        append(FrontmatterSerializer.serialize(ctx.frontmatter, ctx.frontmatterMode))
         appendLine()
         appendLine()
         appendLine("[${ctx.moduleName}](../../${ctx.moduleName}-hub.md) / ${ctx.symbolName}")

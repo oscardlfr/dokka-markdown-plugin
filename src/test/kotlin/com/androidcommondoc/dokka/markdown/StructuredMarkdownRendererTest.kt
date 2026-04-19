@@ -171,6 +171,39 @@ class StructuredMarkdownRendererTest {
             val renderer = StructuredMarkdownRenderer(ctx)
             assertEquals("L0", renderer.config.layer)
         }
+
+        @Test
+        fun `config_frontmatterModeMinimal_wiredThrough`() {
+            val customConfig = MarkdownPluginConfig(frontmatterMode = FrontmatterMode.MINIMAL)
+            val pluginEntry = PluginConfigurationImpl(
+                fqPluginName = "com.androidcommondoc.dokka.markdown.StructuredMarkdownPlugin",
+                serializationFormat = DokkaConfiguration.SerializationFormat.JSON,
+                values = MarkdownPluginConfigSerializer.serialize(customConfig),
+            )
+            val ctx = fakeContext(outputDir = tempDir, pluginConfigs = listOf(pluginEntry))
+            val renderer = StructuredMarkdownRenderer(ctx)
+            assertEquals(FrontmatterMode.MINIMAL, renderer.config.frontmatterMode)
+        }
+
+        @Test
+        fun `config_frontmatterModeNone_wiredThrough`() {
+            val customConfig = MarkdownPluginConfig(frontmatterMode = FrontmatterMode.NONE)
+            val pluginEntry = PluginConfigurationImpl(
+                fqPluginName = "com.androidcommondoc.dokka.markdown.StructuredMarkdownPlugin",
+                serializationFormat = DokkaConfiguration.SerializationFormat.JSON,
+                values = MarkdownPluginConfigSerializer.serialize(customConfig),
+            )
+            val ctx = fakeContext(outputDir = tempDir, pluginConfigs = listOf(pluginEntry))
+            val renderer = StructuredMarkdownRenderer(ctx)
+            assertEquals(FrontmatterMode.NONE, renderer.config.frontmatterMode)
+        }
+
+        @Test
+        fun `config_emptyPluginsConfiguration_frontmatterModeDefaultsToStructured`() {
+            val ctx = fakeContext(outputDir = tempDir)
+            val renderer = StructuredMarkdownRenderer(ctx)
+            assertEquals(FrontmatterMode.STRUCTURED, renderer.config.frontmatterMode)
+        }
     }
 
     @Nested
