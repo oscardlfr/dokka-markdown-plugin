@@ -2,6 +2,7 @@ plugins {
     kotlin("jvm") version "2.3.0"
     `maven-publish`
     `java-gradle-plugin`
+    id("org.jetbrains.kotlinx.kover") version "0.9.1"
 }
 
 // java-gradle-plugin is applied only for TestKit's plugin-under-test-metadata.properties
@@ -58,8 +59,6 @@ val integrationTest by tasks.registering(Test::class) {
     systemProperty("pluginJarDir", layout.buildDirectory.dir("libs").get().asFile.absolutePath)
 }
 
-tasks.check { dependsOn(integrationTest) }
-
 publishing {
     publications {
         create<MavenPublication>("maven") {
@@ -78,4 +77,25 @@ publishing {
             }
         }
     }
+}
+
+kover {
+    currentProject {
+        instrumentation {
+            disabledForTestTasks.add("integrationTest")
+        }
+    }
+    reports {
+        verify {
+            rule {
+                minBound(85, kotlinx.kover.gradle.plugin.dsl.CoverageUnit.LINE)
+                minBound(80, kotlinx.kover.gradle.plugin.dsl.CoverageUnit.BRANCH)
+            }
+        }
+    }
+}
+
+tasks.named("check") {
+    dependsOn(integrationTest)
+    dependsOn("koverVerify")
 }
