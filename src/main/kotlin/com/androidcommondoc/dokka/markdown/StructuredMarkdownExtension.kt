@@ -1,4 +1,4 @@
-package com.androidcommondoc.dokka.markdown
+package io.github.oscardlfr.dokka.markdown
 
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty

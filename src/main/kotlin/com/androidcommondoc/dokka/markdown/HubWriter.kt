@@ -1,4 +1,4 @@
-package com.androidcommondoc.dokka.markdown
+package io.github.oscardlfr.dokka.markdown
 
 data class HubEntry(
     val symbolName: String,

@@ -1,4 +1,4 @@
-package com.androidcommondoc.dokka.markdown
+package io.github.oscardlfr.dokka.markdown
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -23,7 +23,7 @@ class StructuredMarkdownGradlePlugin : Plugin<Project> {
                         MarkdownPluginConfiguration::class
                     )
                     register<MarkdownPluginConfiguration>(
-                        "com.androidcommondoc.dokka.markdown.StructuredMarkdownPlugin"
+                        "io.github.oscardlfr.dokka.markdown.StructuredMarkdownPlugin"
                     ) {
                         layer.convention(ext.layer)
                         category.convention(ext.category)

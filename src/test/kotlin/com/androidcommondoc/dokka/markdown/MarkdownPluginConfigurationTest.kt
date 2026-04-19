@@ -1,4 +1,4 @@
-package com.androidcommondoc.dokka.markdown
+package io.github.oscardlfr.dokka.markdown
 
 import org.gradle.testfixtures.ProjectBuilder
 import org.jetbrains.dokka.gradle.internal.InternalDokkaGradlePluginApi
@@ -35,7 +35,7 @@ class MarkdownPluginConfigurationTest {
 
     @Test
     fun `pluginFqn_isStructuredMarkdownPluginClassFqn`() {
-        assertEquals("com.androidcommondoc.dokka.markdown.StructuredMarkdownPlugin", config.pluginFqn)
+        assertEquals("io.github.oscardlfr.dokka.markdown.StructuredMarkdownPlugin", config.pluginFqn)
     }
 
     @Nested

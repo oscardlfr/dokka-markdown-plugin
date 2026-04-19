@@ -1,4 +1,4 @@
-package com.androidcommondoc.dokka.markdown
+package io.github.oscardlfr.dokka.markdown
 
 import org.jetbrains.dokka.model.*
 import org.jetbrains.dokka.model.doc.*
@@ -12,7 +12,7 @@ class StructuredMarkdownRenderer(private val context: DokkaContext) : Renderer {
 
     internal val config: MarkdownPluginConfig = run {
         val raw = context.configuration.pluginsConfiguration
-            .firstOrNull { it.fqPluginName == "com.androidcommondoc.dokka.markdown.StructuredMarkdownPlugin" }
+            .firstOrNull { it.fqPluginName == "io.github.oscardlfr.dokka.markdown.StructuredMarkdownPlugin" }
             ?.values
         if (raw != null) MarkdownPluginConfigSerializer.deserialize(raw)
         else MarkdownPluginConfig()

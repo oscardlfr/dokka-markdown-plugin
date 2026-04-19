@@ -1,4 +1,4 @@
-package com.androidcommondoc.dokka.markdown
+package io.github.oscardlfr.dokka.markdown
 
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
@@ -50,7 +50,7 @@ class GoldenIntegrationTest {
         // Create a flat local Maven repository inside the temp dir.
         // Avoids Windows drive-letter path resolution issues with files(...).
         val localRepo = File(projectDir, "local-plugin-repo")
-        val repoCoord = "com/androidcommondoc/dokka-markdown-plugin/0.1.0"
+        val repoCoord = "io/github/oscardlfr/dokka-markdown-plugin/0.1.0"
         val repoDir = File(localRepo, repoCoord).also { it.mkdirs() }
         pluginJar.copyTo(File(repoDir, "dokka-markdown-plugin-0.1.0.jar"), overwrite = true)
         File(repoDir, "dokka-markdown-plugin-0.1.0.pom").writeText(minimalPom())
@@ -70,7 +70,7 @@ class GoldenIntegrationTest {
                 }
             }
             dependencies {
-                dokkaPlugin("com.androidcommondoc:dokka-markdown-plugin:0.1.0")
+                dokkaPlugin("io.github.oscardlfr:dokka-markdown-plugin:0.1.0")
             }
         """.trimIndent()
 
@@ -108,19 +108,19 @@ class GoldenIntegrationTest {
         if (layer != null || hashFormat != null || filenameConvention != null || frontmatterMode != null) {
             val dslLines = buildList {
                 layer?.let { add("    layer.set(\"$it\")") }
-                hashFormat?.let { add("    hashFormat.set(com.androidcommondoc.dokka.markdown.HashFormat.$it)") }
-                filenameConvention?.let { add("    filenameConvention.set(com.androidcommondoc.dokka.markdown.FilenameConvention.$it)") }
-                frontmatterMode?.let { add("    frontmatterMode.set(com.androidcommondoc.dokka.markdown.FrontmatterMode.$it)") }
+                hashFormat?.let { add("    hashFormat.set(io.github.oscardlfr.dokka.markdown.HashFormat.$it)") }
+                filenameConvention?.let { add("    filenameConvention.set(io.github.oscardlfr.dokka.markdown.FilenameConvention.$it)") }
+                frontmatterMode?.let { add("    frontmatterMode.set(io.github.oscardlfr.dokka.markdown.FrontmatterMode.$it)") }
             }
             val configBlock = "structuredMarkdown {\n${dslLines.joinToString("\n")}\n}"
             val submoduleBuildWithConfig = """
                 plugins {
                     kotlin("multiplatform") version "2.3.0"
                     id("org.jetbrains.dokka") version "2.2.0"
-                    id("com.androidcommondoc.dokka-markdown-config")
+                    id("io.github.oscardlfr.dokka-markdown-config")
                 }
                 kotlin { jvm(); sourceSets { commonMain.dependencies {} } }
-                dependencies { dokkaPlugin("com.androidcommondoc:dokka-markdown-plugin:0.1.0") }
+                dependencies { dokkaPlugin("io.github.oscardlfr:dokka-markdown-plugin:0.1.0") }
                 $configBlock
             """.trimIndent()
             File(projectDir, "sample-core/build.gradle.kts").writeText(submoduleBuildWithConfig)
@@ -462,7 +462,7 @@ class GoldenIntegrationTest {
         <?xml version="1.0" encoding="UTF-8"?>
         <project>
           <modelVersion>4.0.0</modelVersion>
-          <groupId>com.androidcommondoc</groupId>
+          <groupId>io.github.oscardlfr</groupId>
           <artifactId>dokka-markdown-plugin</artifactId>
           <version>0.1.0</version>
           <packaging>jar</packaging>

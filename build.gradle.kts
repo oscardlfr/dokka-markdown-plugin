@@ -11,16 +11,16 @@ plugins {
 // consumers use dokkaPlugin(...) via the DokkaPlugin SPI. Disable the automatic
 // plugin-marker publication so publish:
 //   - Publishes only our main maven publication
-//   - Does NOT publish a com.androidcommondoc.dokka-markdown.gradle.plugin marker
+//   - Does NOT publish a io.github.oscardlfr.dokka-markdown-plugin.gradle.plugin marker
 gradlePlugin {
     plugins {
         create("dokkaMarkdown") {
-            id = "com.androidcommondoc.dokka-markdown"
-            implementationClass = "com.androidcommondoc.dokka.markdown.StructuredMarkdownPlugin"
+            id = "io.github.oscardlfr.dokka-markdown-plugin"
+            implementationClass = "io.github.oscardlfr.dokka.markdown.StructuredMarkdownPlugin"
         }
         create("dokkaMarkdownGradle") {
-            id = "com.androidcommondoc.dokka-markdown-config"
-            implementationClass = "com.androidcommondoc.dokka.markdown.StructuredMarkdownGradlePlugin"
+            id = "io.github.oscardlfr.dokka-markdown-config"
+            implementationClass = "io.github.oscardlfr.dokka.markdown.StructuredMarkdownGradlePlugin"
         }
     }
     isAutomatedPublishing = false
@@ -73,7 +73,7 @@ val integrationTest by tasks.registering(Test::class) {
 publishing {
     publications {
         create<MavenPublication>("maven") {
-            groupId = "com.androidcommondoc"
+            groupId = "io.github.oscardlfr"
             artifactId = "dokka-markdown-plugin"
             from(components["java"])
         }
@@ -102,7 +102,7 @@ kover {
                 // Renderer integration-tested via GradleRunner (Wave 1 byte-identical golden + Wave 4 matrix).
                 // Kover cannot instrument TestKit subprocess. Coverage maintained via integration safety gate.
                 // DO NOT exclude other classes — unit tests must cover remaining code paths.
-                classes("com.androidcommondoc.dokka.markdown.StructuredMarkdownRenderer")
+                classes("io.github.oscardlfr.dokka.markdown.StructuredMarkdownRenderer")
             }
         }
         verify {

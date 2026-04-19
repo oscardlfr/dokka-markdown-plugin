@@ -1,4 +1,4 @@
-package com.androidcommondoc.dokka.markdown
+package io.github.oscardlfr.dokka.markdown
 
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.DokkaConfigurationImpl
@@ -68,7 +68,7 @@ class StructuredMarkdownRendererTest {
         fun `config_matchingFqPluginName_deserializesCustomValues`() {
             val customConfig = MarkdownPluginConfig(layer = "L2", category = "domain")
             val pluginEntry = PluginConfigurationImpl(
-                fqPluginName = "com.androidcommondoc.dokka.markdown.StructuredMarkdownPlugin",
+                fqPluginName = "io.github.oscardlfr.dokka.markdown.StructuredMarkdownPlugin",
                 serializationFormat = DokkaConfiguration.SerializationFormat.JSON,
                 values = MarkdownPluginConfigSerializer.serialize(customConfig),
             )
@@ -94,7 +94,7 @@ class StructuredMarkdownRendererTest {
         fun `config_hashFormatFullSha256_deserialized`() {
             val customConfig = MarkdownPluginConfig(hashFormat = HashFormat.FULL_SHA256_WITH_PREFIX)
             val pluginEntry = PluginConfigurationImpl(
-                fqPluginName = "com.androidcommondoc.dokka.markdown.StructuredMarkdownPlugin",
+                fqPluginName = "io.github.oscardlfr.dokka.markdown.StructuredMarkdownPlugin",
                 serializationFormat = DokkaConfiguration.SerializationFormat.JSON,
                 values = MarkdownPluginConfigSerializer.serialize(customConfig),
             )
@@ -107,7 +107,7 @@ class StructuredMarkdownRendererTest {
         fun `config_filenameConventionPlain_deserialized`() {
             val customConfig = MarkdownPluginConfig(filenameConvention = FilenameConvention.PLAIN)
             val pluginEntry = PluginConfigurationImpl(
-                fqPluginName = "com.androidcommondoc.dokka.markdown.StructuredMarkdownPlugin",
+                fqPluginName = "io.github.oscardlfr.dokka.markdown.StructuredMarkdownPlugin",
                 serializationFormat = DokkaConfiguration.SerializationFormat.JSON,
                 values = MarkdownPluginConfigSerializer.serialize(customConfig),
             )
@@ -120,7 +120,7 @@ class StructuredMarkdownRendererTest {
         fun `config_frontmatterModeMinimal_deserialized`() {
             val customConfig = MarkdownPluginConfig(frontmatterMode = FrontmatterMode.MINIMAL)
             val pluginEntry = PluginConfigurationImpl(
-                fqPluginName = "com.androidcommondoc.dokka.markdown.StructuredMarkdownPlugin",
+                fqPluginName = "io.github.oscardlfr.dokka.markdown.StructuredMarkdownPlugin",
                 serializationFormat = DokkaConfiguration.SerializationFormat.JSON,
                 values = MarkdownPluginConfigSerializer.serialize(customConfig),
             )
@@ -133,7 +133,7 @@ class StructuredMarkdownRendererTest {
         fun `config_customKdocStatePath_deserialized`() {
             val customConfig = MarkdownPluginConfig(kdocStatePath = "custom/path/kdoc.json")
             val pluginEntry = PluginConfigurationImpl(
-                fqPluginName = "com.androidcommondoc.dokka.markdown.StructuredMarkdownPlugin",
+                fqPluginName = "io.github.oscardlfr.dokka.markdown.StructuredMarkdownPlugin",
                 serializationFormat = DokkaConfiguration.SerializationFormat.JSON,
                 values = MarkdownPluginConfigSerializer.serialize(customConfig),
             )
@@ -146,7 +146,7 @@ class StructuredMarkdownRendererTest {
         fun `config_customTargets_deserialized`() {
             val customConfig = MarkdownPluginConfig(targets = listOf("android", "desktop"))
             val pluginEntry = PluginConfigurationImpl(
-                fqPluginName = "com.androidcommondoc.dokka.markdown.StructuredMarkdownPlugin",
+                fqPluginName = "io.github.oscardlfr.dokka.markdown.StructuredMarkdownPlugin",
                 serializationFormat = DokkaConfiguration.SerializationFormat.JSON,
                 values = MarkdownPluginConfigSerializer.serialize(customConfig),
             )
@@ -163,7 +163,7 @@ class StructuredMarkdownRendererTest {
                 values = MarkdownPluginConfigSerializer.serialize(MarkdownPluginConfig(layer = "WRONG")),
             )
             val rightEntry = PluginConfigurationImpl(
-                fqPluginName = "com.androidcommondoc.dokka.markdown.StructuredMarkdownPlugin",
+                fqPluginName = "io.github.oscardlfr.dokka.markdown.StructuredMarkdownPlugin",
                 serializationFormat = DokkaConfiguration.SerializationFormat.JSON,
                 values = MarkdownPluginConfigSerializer.serialize(MarkdownPluginConfig(layer = "L0")),
             )
@@ -176,7 +176,7 @@ class StructuredMarkdownRendererTest {
         fun `config_frontmatterModeMinimal_wiredThrough`() {
             val customConfig = MarkdownPluginConfig(frontmatterMode = FrontmatterMode.MINIMAL)
             val pluginEntry = PluginConfigurationImpl(
-                fqPluginName = "com.androidcommondoc.dokka.markdown.StructuredMarkdownPlugin",
+                fqPluginName = "io.github.oscardlfr.dokka.markdown.StructuredMarkdownPlugin",
                 serializationFormat = DokkaConfiguration.SerializationFormat.JSON,
                 values = MarkdownPluginConfigSerializer.serialize(customConfig),
             )
@@ -189,7 +189,7 @@ class StructuredMarkdownRendererTest {
         fun `config_frontmatterModeNone_wiredThrough`() {
             val customConfig = MarkdownPluginConfig(frontmatterMode = FrontmatterMode.NONE)
             val pluginEntry = PluginConfigurationImpl(
-                fqPluginName = "com.androidcommondoc.dokka.markdown.StructuredMarkdownPlugin",
+                fqPluginName = "io.github.oscardlfr.dokka.markdown.StructuredMarkdownPlugin",
                 serializationFormat = DokkaConfiguration.SerializationFormat.JSON,
                 values = MarkdownPluginConfigSerializer.serialize(customConfig),
             )

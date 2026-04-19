@@ -1,4 +1,4 @@
-package com.androidcommondoc.dokka.markdown
+package io.github.oscardlfr.dokka.markdown
 
 import org.gradle.testfixtures.ProjectBuilder
 import org.jetbrains.dokka.gradle.DokkaExtension
@@ -14,7 +14,7 @@ class StructuredMarkdownGradlePluginTest {
     @Test
     fun `apply_withoutDokka_noException_extensionRegistered`() {
         val project = ProjectBuilder.builder().build()
-        project.plugins.apply("com.androidcommondoc.dokka-markdown-config")
+        project.plugins.apply("io.github.oscardlfr.dokka-markdown-config")
 
         val ext = project.extensions.findByType(StructuredMarkdownExtension::class.java)
         assertNotNull(ext, "StructuredMarkdownExtension must be registered after plugin apply")
@@ -24,7 +24,7 @@ class StructuredMarkdownGradlePluginTest {
     @Test
     fun `apply_withoutDokka_dokkaExtensionAbsent_noPluginsConfigurationEntry`() {
         val project = ProjectBuilder.builder().build()
-        project.plugins.apply("com.androidcommondoc.dokka-markdown-config")
+        project.plugins.apply("io.github.oscardlfr.dokka-markdown-config")
 
         val dokkaExt = project.extensions.findByType(DokkaExtension::class.java)
         assertNull(dokkaExt, "DokkaExtension must not be present when Dokka plugin is absent")
@@ -34,8 +34,8 @@ class StructuredMarkdownGradlePluginTest {
     @Test
     fun `apply_twice_isIdempotent_noException`() {
         val project = ProjectBuilder.builder().build()
-        project.plugins.apply("com.androidcommondoc.dokka-markdown-config")
-        project.plugins.apply("com.androidcommondoc.dokka-markdown-config")
+        project.plugins.apply("io.github.oscardlfr.dokka-markdown-config")
+        project.plugins.apply("io.github.oscardlfr.dokka-markdown-config")
 
         val ext = project.extensions.findByType(StructuredMarkdownExtension::class.java)
         assertNotNull(ext, "StructuredMarkdownExtension must be present after double apply")

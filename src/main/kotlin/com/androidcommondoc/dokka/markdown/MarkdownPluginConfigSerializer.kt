@@ -1,4 +1,4 @@
-package com.androidcommondoc.dokka.markdown
+package io.github.oscardlfr.dokka.markdown
 
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json

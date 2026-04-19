@@ -1,4 +1,4 @@
-package com.androidcommondoc.dokka.markdown
+package io.github.oscardlfr.dokka.markdown
 
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.model.*

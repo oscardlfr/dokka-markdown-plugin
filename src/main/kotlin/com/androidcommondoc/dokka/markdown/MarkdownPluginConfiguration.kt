@@ -1,4 +1,4 @@
-package com.androidcommondoc.dokka.markdown
+package io.github.oscardlfr.dokka.markdown
 
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
@@ -12,7 +12,7 @@ import javax.inject.Inject
 abstract class MarkdownPluginConfiguration @Inject constructor(name: String) :
     DokkaPluginParametersBaseSpec(
         name,
-        "com.androidcommondoc.dokka.markdown.StructuredMarkdownPlugin"
+        "io.github.oscardlfr.dokka.markdown.StructuredMarkdownPlugin"
     ) {
 
     @get:Input abstract val layer: Property<String>
