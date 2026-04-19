@@ -14,10 +14,10 @@ Add to your project's `libs.versions.toml`:
 
 ```toml
 [versions]
-dokka-markdown-plugin = "0.1.0"
+dokka-markdown-plugin = "0.2.0"
 
 [libraries]
-dokka-markdown-plugin = { module = "com.androidcommondoc:dokka-markdown-plugin", version.ref = "dokka-markdown-plugin" }
+dokka-markdown-plugin = { module = "io.github.oscardlfr:dokka-markdown-plugin", version.ref = "dokka-markdown-plugin" }
 ```
 
 Add the GitHub Packages repository in your root `build.gradle.kts`:
@@ -135,11 +135,67 @@ The plugin normalizes module names to a consistent kebab form, supporting all co
 
 Dokka 2.1.x used a different renderer extension point (`htmlRenderer` shape differs). Upgrade to 2.2.x before adopting this plugin.
 
-## Current limitations (0.1.0)
+## DSL Configuration
 
-- `layer` field hardcoded to `L1` — custom DSL for L0/L2 override planned for 0.2.0
-- Output directory is Dokka's `context.configuration.outputDir`; custom `structuredMarkdown { outputDirectory }` DSL planned for 0.2.0
-- KDoc-state file path uses `../` relative from `outputDir` — absolute path DSL override planned for 0.2.0
+Apply the companion Gradle plugin alongside Dokka, then configure via `structuredMarkdown {}`:
+
+```kotlin
+plugins {
+    id("org.jetbrains.dokka") version "2.2.0"
+    id("io.github.oscardlfr.dokka-markdown-config") version "0.2.0"
+}
+
+dependencies {
+    dokkaPlugin(libs.dokka.markdown.plugin)
+}
+
+structuredMarkdown {
+    layer.set("L1")                                           // default: "L1"
+    category.set("api")                                       // default: "api"
+    hubParent.set("api-hub")                                  // default: "api-hub"
+    targets.set(listOf("all"))                                // default: ["all"]
+    status.set("active")                                      // default: "active"
+    generatedFrom.set("dokka")                                // default: "dokka"
+    schemaVersion.set(1)                                      // default: 1
+    hashFormat.set(HashFormat.COMPACT_12_HEX)                 // default: COMPACT_12_HEX
+    filenameConvention.set(FilenameConvention.LEADING_DASH)   // default: LEADING_DASH
+    slugSeparator.set("--")                                   // default: "--"
+    kdocStatePath.set("")                                     // default: "" (uses legacy path)
+    frontmatterMode.set(FrontmatterMode.STRUCTURED)           // default: STRUCTURED
+    customFields.set(mapOf())                                 // default: empty
+}
+```
+
+### Enum values
+
+**`FrontmatterMode`**
+- `STRUCTURED` — full 14-field YAML frontmatter (default, v0.1.0 behavior)
+- `MINIMAL` — only `slug:` and `content_hash:` fields
+- `NONE` — no frontmatter block emitted; pure markdown body
+
+**`HashFormat`**
+- `COMPACT_12_HEX` — 12-char compact hex e.g. `7a8836e73f62` (default, v0.1.0 behavior)
+- `FULL_SHA256_WITH_PREFIX` — `sha256:<64-hex-chars>`
+- `NONE` — no content hash field
+
+**`FilenameConvention`**
+- `LEADING_DASH` — leading dash prefix e.g. `-network-result.md` (default, v0.1.0 behavior)
+- `PLAIN` — no leading dash e.g. `network-result.md`
+
+## Upgrading from v0.1.0
+
+**Coordinate change (breaking):**
+```toml
+# Before
+dokka-markdown-plugin = { module = "com.androidcommondoc:dokka-markdown-plugin", version = "0.1.0" }
+
+# After
+dokka-markdown-plugin = { module = "io.github.oscardlfr:dokka-markdown-plugin", version = "0.2.0" }
+```
+
+**Behavior**: No `structuredMarkdown {}` block required. All defaults in v0.2.0 replicate v0.1.0 output exactly — absent the DSL block, behavior is byte-identical.
+
+**Composite build consumers**: update the `substitute(module(...))` coordinate to `io.github.oscardlfr:dokka-markdown-plugin`.
 
 ## Building from source
 
@@ -160,7 +216,7 @@ During development or when testing pre-release changes, consumers can use Gradle
 // consumer settings.gradle.kts
 includeBuild("../dokka-markdown-plugin") {
     dependencySubstitution {
-        substitute(module("com.androidcommondoc:dokka-markdown-plugin"))
+        substitute(module("io.github.oscardlfr:dokka-markdown-plugin"))
             .using(project(":"))
     }
 }
