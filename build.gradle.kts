@@ -43,6 +43,7 @@ dependencies {
     testImplementation("org.jetbrains.dokka:dokka-core:2.2.0")
     testImplementation("org.jetbrains.dokka:dokka-base:2.2.0")
     testImplementation("org.jetbrains.dokka:dokka-gradle-plugin:2.2.0")
+    testRuntimeOnly("org.jetbrains.dokka:dokka-gradle-plugin:2.2.0")
     testImplementation(gradleTestKit())
     testImplementation(gradleKotlinDsl())
 }
