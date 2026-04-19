@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "2.3.0"
+    kotlin("plugin.serialization") version "2.3.0"
     `maven-publish`
     `java-gradle-plugin`
     id("org.jetbrains.kotlinx.kover") version "0.9.1"
@@ -17,6 +18,10 @@ gradlePlugin {
             id = "com.androidcommondoc.dokka-markdown"
             implementationClass = "com.androidcommondoc.dokka.markdown.StructuredMarkdownPlugin"
         }
+        create("dokkaMarkdownGradle") {
+            id = "com.androidcommondoc.dokka-markdown-config"
+            implementationClass = "com.androidcommondoc.dokka.markdown.StructuredMarkdownGradlePlugin"
+        }
     }
     isAutomatedPublishing = false
 }
@@ -29,12 +34,17 @@ repositories {
 dependencies {
     compileOnly("org.jetbrains.dokka:dokka-core:2.2.0")
     compileOnly("org.jetbrains.dokka:dokka-base:2.2.0")
+    compileOnly("org.jetbrains.dokka:dokka-gradle-plugin:2.2.0")
+    compileOnly(gradleKotlinDsl())
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 
     testImplementation(kotlin("test-junit5"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.0")
     testImplementation("org.jetbrains.dokka:dokka-core:2.2.0")
     testImplementation("org.jetbrains.dokka:dokka-base:2.2.0")
+    testImplementation("org.jetbrains.dokka:dokka-gradle-plugin:2.2.0")
     testImplementation(gradleTestKit())
+    testImplementation(gradleKotlinDsl())
 }
 
 kotlin {
