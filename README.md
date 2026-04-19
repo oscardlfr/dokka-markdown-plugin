@@ -4,9 +4,9 @@
 [![Dokka](https://img.shields.io/badge/Dokka-2.2.0-blue)](https://kotlinlang.org/docs/dokka-introduction.html)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.3.20-purple)](https://kotlinlang.org/)
 
-Dokka 2.2.x plugin that transforms KDoc into structured markdown (`docs/api/*.md`) with 14-field YAML frontmatter, content-addressed hashes for CI drift detection, and first-class KMP expect/actual handling.
+Dokka 2.2.x plugin that transforms KDoc into structured markdown (`docs/api/*.md`) with a Kotlin DSL for layer, category, hash format, filename convention, and frontmatter mode (STRUCTURED 14-field default, or MINIMAL / NONE). Content-addressed hashes for CI drift detection. First-class KMP expect/actual handling.
 
-Designed for AI agent consumption — deterministic output, slug-based cross-references, and structured platform labels.
+Designed for AI agent consumption — deterministic output, slug-based cross-references, and structured platform labels. Defaults replicate v0.1.0 byte-for-byte; upgrade consumers pick up the DSL when they opt in.
 
 ## Apply
 
@@ -202,7 +202,7 @@ dokka-markdown-plugin = { module = "io.github.oscardlfr:dokka-markdown-plugin", 
 ```bash
 git clone https://github.com/oscardlfr/dokka-markdown-plugin.git
 cd dokka-markdown-plugin
-./gradlew test --no-daemon       # 120 unit + 2 integration tests
+./gradlew test --no-daemon       # 274 unit + 3 integration tests (10 matrix scenarios @Disabled pending Maven Central publish)
 ./gradlew publishToMavenLocal    # install locally for testing
 ```
 
