@@ -110,4 +110,60 @@ class TypeBWriterTest {
             assertTrue(!result.contains("**Platforms:**"))
         }
     }
+
+    @Nested
+    inner class Sections {
+
+        @Test
+        fun `write_withParams_containsParametersSection`() {
+            val param = org.jetbrains.dokka.model.doc.Param(
+                root = org.jetbrains.dokka.model.doc.P(children = listOf(org.jetbrains.dokka.model.doc.Text(body = "The input."))),
+                name = "input",
+            )
+            val result = TypeBWriter.write(minimalCtx(params = listOf(param)))
+            assertTrue(result.contains("#### Parameters"), result)
+            assertTrue(result.contains("`input`"), result)
+        }
+
+        @Test
+        fun `write_withReturn_containsReturnSection`() {
+            val ret = org.jetbrains.dokka.model.doc.Return(
+                root = org.jetbrains.dokka.model.doc.P(children = listOf(org.jetbrains.dokka.model.doc.Text(body = "The result."))),
+            )
+            val result = TypeBWriter.write(minimalCtx(returnDoc = ret))
+            assertTrue(result.contains("#### Return"), result)
+            assertTrue(result.contains("The result."), result)
+        }
+
+        @Test
+        fun `write_withThrows_containsThrowsSection`() {
+            val throws = org.jetbrains.dokka.model.doc.Throws(
+                root = org.jetbrains.dokka.model.doc.P(children = listOf(org.jetbrains.dokka.model.doc.Text(body = "When null."))),
+                name = "IllegalArgumentException",
+                exceptionAddress = null,
+            )
+            val result = TypeBWriter.write(minimalCtx(throws = listOf(throws)))
+            assertTrue(result.contains("#### Throws"), result)
+            assertTrue(result.contains("`IllegalArgumentException`"), result)
+        }
+
+        @Test
+        fun `write_withSee_containsSeeAlsoSection`() {
+            val see = org.jetbrains.dokka.model.doc.See(
+                root = org.jetbrains.dokka.model.doc.P(children = emptyList()),
+                name = "com.sample.Other",
+                address = null,
+            )
+            val result = TypeBWriter.write(minimalCtx(sees = listOf(see)))
+            assertTrue(result.contains("#### See also"), result)
+            assertTrue(result.contains("`com.sample.Other`"), result)
+        }
+
+        @Test
+        fun `write_emptyDescription_noBlankDescriptionBlock`() {
+            val result = TypeBWriter.write(minimalCtx(description = ""))
+            // signature is present but no extra blank line for empty description
+            assertTrue(result.contains("fun doSomething"), result)
+        }
+    }
 }

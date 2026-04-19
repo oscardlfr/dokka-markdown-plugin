@@ -133,4 +133,68 @@ class FrontmatterSerializerTest {
             assertTrue(FrontmatterSerializer.serialize(fm).contains("description: Does something"))
         }
     }
+
+    @Nested
+    inner class ModeDispatch {
+
+        @Test
+        fun `serialize_structuredMode_producesFullYaml`() {
+            val result = FrontmatterSerializer.serialize(baseFm(), FrontmatterMode.STRUCTURED)
+            assertTrue(result.startsWith("---\n"))
+            assertTrue(result.contains("scope:"))
+            assertTrue(result.contains("layer:"))
+            assertTrue(result.contains("content_hash:"))
+        }
+
+        @Test
+        fun `serialize_minimalMode_hasOnlyFourFields`() {
+            val result = FrontmatterSerializer.serialize(baseFm(), FrontmatterMode.MINIMAL)
+            val keys = result.lines()
+                .filter { it.contains(":") && !it.startsWith("---") }
+                .map { it.substringBefore(":").trim() }
+            assertEquals(listOf("slug", "layer", "category", "contentHash"), keys)
+        }
+
+        @Test
+        fun `serialize_minimalMode_fencedWithTripleDash`() {
+            val result = FrontmatterSerializer.serialize(baseFm(), FrontmatterMode.MINIMAL)
+            assertTrue(result.startsWith("---\n"))
+            assertTrue(result.endsWith("---\n"))
+        }
+
+        @Test
+        fun `serialize_noneMode_emptyString`() {
+            val result = FrontmatterSerializer.serialize(baseFm(), FrontmatterMode.NONE)
+            assertEquals("", result)
+        }
+
+        @Test
+        fun `serialize_defaultMode_isStructured`() {
+            val withDefault = FrontmatterSerializer.serialize(baseFm())
+            val withExplicit = FrontmatterSerializer.serialize(baseFm(), FrontmatterMode.STRUCTURED)
+            assertEquals(withExplicit, withDefault)
+        }
+    }
+
+    @Nested
+    inner class ToYamlExtension {
+
+        @Test
+        fun `toYaml_structuredMode_hasTrailingNewlineAfterFence`() {
+            val result = FrontmatterSerializer.toYaml(baseFm(), FrontmatterMode.STRUCTURED)
+            assertTrue(result.endsWith("---\n\n"), "Expected trailing blank line after fence, got: ${result.takeLast(10)}")
+        }
+
+        @Test
+        fun `toYaml_noneMode_emptyString`() {
+            val result = FrontmatterSerializer.toYaml(baseFm(), FrontmatterMode.NONE)
+            assertEquals("", result)
+        }
+
+        @Test
+        fun `toYaml_minimalMode_hasTrailingNewlineAfterFence`() {
+            val result = FrontmatterSerializer.toYaml(baseFm(), FrontmatterMode.MINIMAL)
+            assertTrue(result.endsWith("---\n\n"))
+        }
+    }
 }

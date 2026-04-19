@@ -20,24 +20,35 @@ data class FrontmatterFields(
 
 object FrontmatterSerializer {
 
-    fun serialize(fields: FrontmatterFields): String = buildString {
-        appendLine("---")
-        appendLine("scope: ${yamlList(fields.scope)}")
-        appendLine("sources: ${yamlList(fields.sources)}")
-        appendLine("targets: ${yamlList(fields.targets)}")
-        appendLine("slug: ${fields.slug}")
-        appendLine("status: ${fields.status}")
-        appendLine("layer: ${fields.layer}")
-        appendLine("category: ${fields.category}")
-        appendLine("description: ${yamlString(fields.description)}")
-        appendLine("version: ${fields.version}")
-        appendLine("last_updated: ${yamlString(fields.lastUpdated)}")
-        appendLine("generated: ${fields.generated}")
-        appendLine("generated_from: ${fields.generatedFrom}")
-        appendLine("content_hash: ${yamlString(fields.contentHash)}")
-        appendLine("parent: ${fields.parent}")
-        fields.platforms?.takeIf { it.isNotEmpty() }?.let { appendLine("platforms: ${yamlList(it)}") }
-        appendLine("---")
+    fun serialize(fields: FrontmatterFields, mode: FrontmatterMode = FrontmatterMode.STRUCTURED): String = when (mode) {
+        FrontmatterMode.STRUCTURED -> buildString {
+            appendLine("---")
+            appendLine("scope: ${yamlList(fields.scope)}")
+            appendLine("sources: ${yamlList(fields.sources)}")
+            appendLine("targets: ${yamlList(fields.targets)}")
+            appendLine("slug: ${fields.slug}")
+            appendLine("status: ${fields.status}")
+            appendLine("layer: ${fields.layer}")
+            appendLine("category: ${fields.category}")
+            appendLine("description: ${yamlString(fields.description)}")
+            appendLine("version: ${fields.version}")
+            appendLine("last_updated: ${yamlString(fields.lastUpdated)}")
+            appendLine("generated: ${fields.generated}")
+            appendLine("generated_from: ${fields.generatedFrom}")
+            appendLine("content_hash: ${yamlString(fields.contentHash)}")
+            appendLine("parent: ${fields.parent}")
+            fields.platforms?.takeIf { it.isNotEmpty() }?.let { appendLine("platforms: ${yamlList(it)}") }
+            appendLine("---")
+        }
+        FrontmatterMode.MINIMAL -> buildString {
+            appendLine("---")
+            appendLine("slug: ${fields.slug}")
+            appendLine("layer: ${fields.layer}")
+            appendLine("category: ${fields.category}")
+            appendLine("contentHash: ${fields.contentHash}")
+            appendLine("---")
+        }
+        FrontmatterMode.NONE -> ""
     }
 
     private fun yamlList(items: List<String>): String =
@@ -52,4 +63,5 @@ object FrontmatterSerializer {
 typealias Frontmatter = FrontmatterFields
 
 
-fun FrontmatterSerializer.toYaml(frontmatter: FrontmatterFields): String = serialize(frontmatter) + "\n"
+fun FrontmatterSerializer.toYaml(frontmatter: FrontmatterFields, mode: FrontmatterMode = FrontmatterMode.STRUCTURED): String =
+    serialize(frontmatter, mode) + if (mode != FrontmatterMode.NONE) "\n" else ""

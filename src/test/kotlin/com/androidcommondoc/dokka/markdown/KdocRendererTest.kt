@@ -163,4 +163,73 @@ class KdocRendererTest {
             assertTrue(result.contains("`com.sample.OtherClass`"))
         }
     }
+
+    @Nested
+    inner class RenderDocTagVariants {
+
+        @Test
+        fun `renderDescription_codeBlock_wrappedInTripleBackticks`() {
+            val codeBlock = CodeBlock(children = listOf(text("val x = 1")))
+            val root = P(children = listOf(codeBlock))
+            val result = KdocRenderer.renderDescription(root)
+            assertTrue(result.contains("```"), result)
+            assertTrue(result.contains("val x = 1"), result)
+        }
+
+        @Test
+        fun `renderDescription_anchor_renderedAsMarkdownLink`() {
+            val link = A(
+                params = mapOf("href" to "https://example.com"),
+                children = listOf(text("click here")),
+            )
+            val root = P(children = listOf(link))
+            val result = KdocRenderer.renderDescription(root)
+            assertTrue(result.contains("[click here](https://example.com)"), result)
+        }
+
+        @Test
+        fun `renderDescription_anchor_missingHref_renderedWithEmptyHref`() {
+            val link = A(params = emptyMap(), children = listOf(text("label")))
+            val root = P(children = listOf(link))
+            val result = KdocRenderer.renderDescription(root)
+            assertTrue(result.contains("[label]()"), result)
+        }
+
+        @Test
+        fun `renderDescription_strong_wrappedInDoubleAsterisks`() {
+            val strong = Strong(children = listOf(text("important")))
+            val root = P(children = listOf(strong))
+            val result = KdocRenderer.renderDescription(root)
+            assertTrue(result.contains("**important**"), result)
+        }
+
+        @Test
+        fun `renderDescription_em_wrappedInUnderscores`() {
+            val em = Em(children = listOf(text("italic")))
+            val root = P(children = listOf(em))
+            val result = KdocRenderer.renderDescription(root)
+            assertTrue(result.contains("_italic_"), result)
+        }
+
+        @Test
+        fun `renderDescription_ul_renderedAsBulletList`() {
+            val ul = Ul(children = listOf(
+                Li(children = listOf(text("item one"))),
+                Li(children = listOf(text("item two"))),
+            ))
+            val root = P(children = listOf(ul))
+            val result = KdocRenderer.renderDescription(root)
+            assertTrue(result.contains("- item one"), result)
+            assertTrue(result.contains("- item two"), result)
+        }
+
+        @Test
+        fun `renderDescription_li_renderedAsChildText`() {
+            val li = Li(children = listOf(text("list item")))
+            val ul = Ul(children = listOf(li))
+            val root = P(children = listOf(ul))
+            val result = KdocRenderer.renderDescription(root)
+            assertTrue(result.contains("list item"), result)
+        }
+    }
 }

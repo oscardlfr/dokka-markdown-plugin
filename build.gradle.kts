@@ -96,6 +96,14 @@ kover {
         }
     }
     reports {
+        filters {
+            excludes {
+                // Renderer integration-tested via GradleRunner (Wave 1 byte-identical golden + Wave 4 matrix).
+                // Kover cannot instrument TestKit subprocess. Coverage maintained via integration safety gate.
+                // DO NOT exclude other classes — unit tests must cover remaining code paths.
+                classes("com.androidcommondoc.dokka.markdown.StructuredMarkdownRenderer")
+            }
+        }
         verify {
             rule {
                 minBound(85, kotlinx.kover.gradle.plugin.dsl.CoverageUnit.LINE)

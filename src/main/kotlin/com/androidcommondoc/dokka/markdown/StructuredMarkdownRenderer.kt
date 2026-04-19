@@ -10,6 +10,14 @@ import java.time.YearMonth
 
 class StructuredMarkdownRenderer(private val context: DokkaContext) : Renderer {
 
+    internal val config: MarkdownPluginConfig = run {
+        val raw = context.configuration.pluginsConfiguration
+            .firstOrNull { it.fqPluginName == "com.androidcommondoc.dokka.markdown.StructuredMarkdownPlugin" }
+            ?.values
+        if (raw != null) MarkdownPluginConfigSerializer.deserialize(raw)
+        else MarkdownPluginConfig()
+    }
+
     override fun render(root: RootPageNode) {
         val outputDir = context.configuration.outputDir.also { it.mkdirs() }
         // In Dokka 2.2.x single-module builds, root IS the ModulePageNode.
@@ -39,7 +47,8 @@ class StructuredMarkdownRenderer(private val context: DokkaContext) : Renderer {
         }
         val hubContent = buildHubContent(moduleName, hubEntries)
         File(outputDir, moduleName + "-hub.md").writeText(hubContent, Charsets.UTF_8)
-        KdocStateWriter.write(outputDir.resolve("../../.androidcommondoc/kdoc-state.json").canonicalFile, stateEntries)
+        val kdocStatePath = config.kdocStatePath.ifEmpty { "../../.androidcommondoc/kdoc-state.json" }
+        KdocStateWriter.write(outputDir.resolve(kdocStatePath).canonicalFile, stateEntries)
     }
 
     private fun renderClasslike(
@@ -70,18 +79,27 @@ class StructuredMarkdownRenderer(private val context: DokkaContext) : Renderer {
         val platforms = page.documentables.firstOrNull()?.sourceSets?.map { it.displayName }?.toSet() ?: emptySet()
         val platformInfo = PlatformLabeler.label(platforms)
         val bodyForHash = "# $symbolName\n${platformInfo?.bodyLine ?: ""}"
-        val contentHash = ContentHasher.hash(bodyForHash)
+        val contentHash = when (config.hashFormat) {
+            HashFormat.COMPACT_12_HEX -> ContentHasher.hash(bodyForHash)
+            HashFormat.FULL_SHA256_WITH_PREFIX -> ContentHasher.hashFull(bodyForHash)
+            HashFormat.NONE -> ""
+        }
         val lastUpdated = YearMonth.now().toString()
-        val scopeList = mutableListOf("api", moduleName).apply {
+        val scopeList = mutableListOf(config.category, moduleName).apply {
             platformInfo?.frontmatterList?.let { addAll(it) }
         }
         val frontmatter = FrontmatterFields(
             scope = scopeList,
             sources = listOf(moduleName),
+            targets = config.targets,
             slug = slug,
-            layer = "L1",
+            status = config.status,
+            layer = config.layer,
+            category = config.category,
             description = description,
+            version = config.schemaVersion,
             lastUpdated = lastUpdated,
+            generatedFrom = config.generatedFrom,
             contentHash = contentHash,
             parent = SlugDeriver.deriveForHub(moduleName),
             platforms = platformInfo?.frontmatterList,
@@ -96,10 +114,11 @@ class StructuredMarkdownRenderer(private val context: DokkaContext) : Renderer {
             members = memberEntries,
             frontmatter = frontmatter,
         ))
-        File(moduleDir, SlugDeriver.fileBasename(symbolName) + ".md").writeText(content, Charsets.UTF_8)
-        val classlikeState = KdocStateEntry(slug, moduleName + "/" + SlugDeriver.fileBasename(symbolName) + ".md", contentHash)
+        val basename = SlugDeriver.fileBasenameFor(symbolName, config.filenameConvention)
+        File(moduleDir, "$basename.md").writeText(content, Charsets.UTF_8)
+        val classlikeState = KdocStateEntry(slug, "$moduleName/$basename.md", contentHash)
         return Pair(
-            HubEntry(symbolName, SlugDeriver.fileBasename(symbolName) + ".md", description),
+            HubEntry(symbolName, "$basename.md", description),
             listOf(classlikeState) + memberStateEntries + nestedStateEntries,
         )
     }
@@ -124,20 +143,29 @@ class StructuredMarkdownRenderer(private val context: DokkaContext) : Renderer {
         val platforms = page.documentables.firstOrNull()?.sourceSets?.map { it.displayName }?.toSet() ?: emptySet()
         val platformInfo = PlatformLabeler.label(platforms)
         val bodyForHash = "# $symbolName\n${platformInfo?.bodyLine ?: ""}\n$description"
-        val contentHash = ContentHasher.hash(bodyForHash)
+        val contentHash = when (config.hashFormat) {
+            HashFormat.COMPACT_12_HEX -> ContentHasher.hash(bodyForHash)
+            HashFormat.FULL_SHA256_WITH_PREFIX -> ContentHasher.hashFull(bodyForHash)
+            HashFormat.NONE -> ""
+        }
         val lastUpdated = YearMonth.now().toString()
         val parentSlug = parentClassName?.let { SlugDeriver.deriveForClass(it, moduleName) }
             ?: SlugDeriver.deriveForHub(moduleName)
-        val scopeList = mutableListOf("api", moduleName).apply {
+        val scopeList = mutableListOf(config.category, moduleName).apply {
             platformInfo?.frontmatterList?.let { addAll(it) }
         }
         val frontmatter = FrontmatterFields(
             scope = scopeList,
             sources = listOf(moduleName),
+            targets = config.targets,
             slug = SlugDeriver.deriveForMember(symbolName, moduleName),
-            layer = "L1",
+            status = config.status,
+            layer = config.layer,
+            category = config.category,
             description = firstSentence,
+            version = config.schemaVersion,
             lastUpdated = lastUpdated,
+            generatedFrom = config.generatedFrom,
             contentHash = contentHash,
             parent = parentSlug,
             platforms = platformInfo?.frontmatterList,
@@ -218,18 +246,27 @@ class StructuredMarkdownRenderer(private val context: DokkaContext) : Renderer {
         val platforms = page.documentables.firstOrNull()?.sourceSets?.map { it.displayName }?.toSet() ?: emptySet()
         val platformInfo = PlatformLabeler.label(platforms)
         val bodyForHash = "# $symbolName\n${platformInfo?.bodyLine ?: ""}"
-        val contentHash = ContentHasher.hash(bodyForHash)
+        val contentHash = when (config.hashFormat) {
+            HashFormat.COMPACT_12_HEX -> ContentHasher.hash(bodyForHash)
+            HashFormat.FULL_SHA256_WITH_PREFIX -> ContentHasher.hashFull(bodyForHash)
+            HashFormat.NONE -> ""
+        }
         val lastUpdated = YearMonth.now().toString()
-        val scopeList = mutableListOf("api", moduleName).apply {
+        val scopeList = mutableListOf(config.category, moduleName).apply {
             platformInfo?.frontmatterList?.let { addAll(it) }
         }
         val frontmatter = FrontmatterFields(
             scope = scopeList,
             sources = listOf(moduleName),
+            targets = config.targets,
             slug = slug,
-            layer = "L1",
+            status = config.status,
+            layer = config.layer,
+            category = config.category,
             description = description,
+            version = config.schemaVersion,
             lastUpdated = lastUpdated,
+            generatedFrom = config.generatedFrom,
             contentHash = contentHash,
             parent = parentSlug,
             platforms = platformInfo?.frontmatterList,
@@ -246,24 +283,33 @@ class StructuredMarkdownRenderer(private val context: DokkaContext) : Renderer {
             members = memberEntries,
             frontmatter = frontmatter,
         ))
-        val filename = SlugDeriver.fileBasename(symbolName) + ".md"
-        File(moduleDir, filename).writeText(content, Charsets.UTF_8)
-        return KdocStateEntry(slug, moduleName + "/" + filename, contentHash)
+        val basename = SlugDeriver.fileBasenameFor(symbolName, config.filenameConvention)
+        File(moduleDir, "$basename.md").writeText(content, Charsets.UTF_8)
+        return KdocStateEntry(slug, "$moduleName/$basename.md", contentHash)
     }
 
     private fun buildHubContent(moduleName: String, entries: List<HubEntry>): String {
         val lastUpdated = YearMonth.now().toString()
         val slug = SlugDeriver.deriveForHub(moduleName)
-        val contentHash = ContentHasher.hash(entries.joinToString("\n") { it.symbolName })
+        val contentHash = when (config.hashFormat) {
+            HashFormat.COMPACT_12_HEX -> ContentHasher.hash(entries.joinToString("\n") { it.symbolName })
+            HashFormat.FULL_SHA256_WITH_PREFIX -> ContentHasher.hashFull(entries.joinToString("\n") { it.symbolName })
+            HashFormat.NONE -> ""
+        }
         val frontmatter = FrontmatterFields(
-            scope = listOf("api", moduleName),
+            scope = listOf(config.category, moduleName),
             sources = listOf(moduleName),
+            targets = config.targets,
             slug = slug,
-            layer = "L1",
+            status = config.status,
+            layer = config.layer,
+            category = config.category,
             description = moduleName + " API hub",
+            version = config.schemaVersion,
             lastUpdated = lastUpdated,
+            generatedFrom = config.generatedFrom,
             contentHash = contentHash,
-            parent = "api-hub",
+            parent = config.hubParent,
         )
         return HubWriter.write(HubContext(moduleName, entries, frontmatter))
     }

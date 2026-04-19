@@ -10,6 +10,12 @@ object ContentHasher {
         return digest.take(6).joinToString("") { "%02x".format(it) }
     }
 
+    fun hashFull(body: String): String {
+        val canonical = canonicalize(body)
+        val digest = MessageDigest.getInstance("SHA-256").digest(canonical.toByteArray(Charsets.UTF_8))
+        return "sha256:" + digest.joinToString("") { "%02x".format(it) }
+    }
+
     fun canonicalize(body: String): String =
         body.lines()
             .joinToString("\n") { it.trimEnd() }

@@ -72,4 +72,48 @@ class ContentHasherTest {
             assertNotEquals(ContentHasher.hash("a"), ContentHasher.hash("b"))
         }
     }
+
+    @Nested
+    inner class HashFull {
+
+        @Test
+        fun `hashFull_nistAbcVector_startsWithSha256Prefix`() {
+            // NIST SHA-256 of "abc" = ba7816bf8f01cfea414140de5dae2ec73b00361bbef0469340d9a9ca48cfa10a...
+            val result = ContentHasher.hashFull("abc")
+            assertTrue(result.startsWith("sha256:ba7816bf"), "Expected sha256:ba7816bf... got: $result")
+        }
+
+        @Test
+        fun `hashFull_length_is71`() {
+            // "sha256:" (7) + 64 hex chars = 71
+            assertEquals(71, ContentHasher.hashFull("abc").length)
+        }
+
+        @Test
+        fun `hashFull_emptyInput_length71`() {
+            assertEquals(71, ContentHasher.hashFull("").length)
+        }
+
+        @Test
+        fun `hashFull_unicodeInput_deterministic`() {
+            val result1 = ContentHasher.hashFull("\u00e9l\u00e8ve")
+            val result2 = ContentHasher.hashFull("\u00e9l\u00e8ve")
+            assertEquals(result1, result2)
+        }
+
+        @Test
+        fun `hashFull_differentFromHash_longerAndPrefixed`() {
+            val short = ContentHasher.hash("abc")
+            val full = ContentHasher.hashFull("abc")
+            assertFalse(short == full, "hash() and hashFull() must not be equal")
+            assertTrue(full.startsWith("sha256:"), "hashFull must start with sha256:")
+            assertFalse(short.startsWith("sha256:"), "hash must not start with sha256:")
+        }
+
+        @Test
+        fun `hashFull_outputIsLowercaseHexAfterPrefix`() {
+            val hex = ContentHasher.hashFull("test").removePrefix("sha256:")
+            assertTrue(hex.matches(Regex("[0-9a-f]{64}")), "Expected 64 lowercase hex chars after prefix, got: $hex")
+        }
+    }
 }

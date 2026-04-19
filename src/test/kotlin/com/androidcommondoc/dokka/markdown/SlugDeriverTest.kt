@@ -147,4 +147,45 @@ class SlugDeriverTest {
             assertEquals(expected, SlugDeriver.normalizeModule(input))
         }
     }
+
+    @Nested
+    inner class FileBasenameFor {
+
+        @Test
+        fun `fileBasenameFor_leadingDash_backwardCompatibleWithFileBasename`() {
+            val className = "MyClass"
+            assertEquals(
+                SlugDeriver.fileBasename(className),
+                SlugDeriver.fileBasenameFor(className, FilenameConvention.LEADING_DASH),
+            )
+        }
+
+        @Test
+        fun `fileBasenameFor_plain_noLeadingDash`() {
+            assertEquals("my-class", SlugDeriver.fileBasenameFor("MyClass", FilenameConvention.PLAIN))
+        }
+
+        @Test
+        fun `fileBasenameFor_plain_acronym_noLeadingDash`() {
+            assertEquals("u-r-l", SlugDeriver.fileBasenameFor("URL", FilenameConvention.PLAIN))
+        }
+
+        @Test
+        fun `fileBasenameFor_leadingDash_acronym_matchesFileBasename`() {
+            assertEquals(
+                SlugDeriver.fileBasename("URL"),
+                SlugDeriver.fileBasenameFor("URL", FilenameConvention.LEADING_DASH),
+            )
+        }
+
+        @Test
+        fun `fileBasenameFor_plain_emptyString_returnsEmpty`() {
+            assertEquals("", SlugDeriver.fileBasenameFor("", FilenameConvention.PLAIN))
+        }
+
+        @Test
+        fun `fileBasenameFor_leadingDash_emptyString_dashOnly`() {
+            assertEquals("-", SlugDeriver.fileBasenameFor("", FilenameConvention.LEADING_DASH))
+        }
+    }
 }

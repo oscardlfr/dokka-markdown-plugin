@@ -20,6 +20,11 @@ object SlugDeriver {
 
     fun fileBasename(className: String): String = "-${toKebab(className)}"
 
+    fun fileBasenameFor(className: String, convention: FilenameConvention): String = when (convention) {
+        FilenameConvention.LEADING_DASH -> "-${toKebab(className)}"
+        FilenameConvention.PLAIN -> toKebab(className)
+    }
+
     fun toKebab(name: String): String {
         if (name.isEmpty()) return name
         // All-uppercase (acronym like "URL", "HTTP") — join each letter with dashes
