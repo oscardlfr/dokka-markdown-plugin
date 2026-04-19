@@ -141,6 +141,58 @@ class GoldenIntegrationTest {
             "Second run must produce identical content_hash values (idempotent)")
     }
 
+    @Test
+    fun `goldenTest_defaultConfig_byteIdenticalToV010`() {
+        val result = GradleRunner.create()
+            .withProjectDir(projectDir)
+            .withArguments("dokkaGenerate", "--stacktrace")
+            .forwardOutput()
+            .build()
+
+        assertTrue(
+            result.tasks.any { it.outcome == TaskOutcome.SUCCESS },
+            "At least one task should succeed"
+        )
+
+        val outputDirs = listOf(
+            File(projectDir, "sample-core/build/dokka/html"),
+            File(projectDir, "sample-data/build/dokka/html"),
+        ).filter { it.exists() }
+
+        assertTrue(outputDirs.isNotEmpty(), "At least one output directory must be created")
+
+        // Byte-identical comparison against frozen golden files.
+        // Filters both volatile fields: content_hash: (run-specific hash) and last_updated: (YearMonth.now()).
+        // All other lines must match exactly — stricter than diffAgainstGolden() which only filters content_hash:.
+        val goldenFiles = expectedDir.walkTopDown().filter { it.isFile && it.extension == "md" }
+        var checkedCount = 0
+        for (goldenFile in goldenFiles) {
+            val relativePath = goldenFile.relativeTo(expectedDir).path.replace("\\", "/")
+            val actualFile = outputDirs
+                .map { File(it, relativePath) }
+                .firstOrNull { it.exists() }
+            assertTrue(actualFile != null, "Expected output file missing: $relativePath")
+
+            val goldenLines = goldenFile.readLines(Charsets.UTF_8)
+                .filterNot { it.startsWith("content_hash:") || it.startsWith("last_updated:") }
+            val actualLines = actualFile.readLines(Charsets.UTF_8)
+                .filterNot { it.startsWith("content_hash:") || it.startsWith("last_updated:") }
+
+            assertEquals(goldenLines.size, actualLines.size,
+                "Line count mismatch in $relativePath after filtering volatile fields: " +
+                "golden=${goldenLines.size} actual=${actualLines.size}")
+
+            goldenLines.zip(actualLines).forEachIndexed { i, (expected, actual) ->
+                assertEquals(expected, actual,
+                    "Byte-identical diff in $relativePath at line ${i + 1}: " +
+                    "golden=[$expected] actual=[$actual]")
+            }
+            checkedCount++
+        }
+        assertEquals(4, checkedCount,
+            "Expected 4 golden files to be checked, was $checkedCount")
+    }
+
     private fun diffAgainstGolden(outputDirs: List<File>) {
         val goldenFiles = expectedDir.walkTopDown().filter { it.isFile && it.extension == "md" }
         for (goldenFile in goldenFiles) {
