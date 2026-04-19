@@ -48,6 +48,19 @@ dependencies {
     testImplementation(gradleKotlinDsl())
 }
 
+val pluginTestClasspath: Configuration by configurations.creating {
+    isCanBeResolved = true
+    isCanBeConsumed = false
+}
+
+dependencies {
+    pluginTestClasspath("org.jetbrains.dokka:dokka-gradle-plugin:2.2.0")
+}
+
+tasks.named<org.gradle.plugin.devel.tasks.PluginUnderTestMetadata>("pluginUnderTestMetadata") {
+    pluginClasspath.from(pluginTestClasspath)
+}
+
 kotlin {
     jvmToolchain(17)
 }
